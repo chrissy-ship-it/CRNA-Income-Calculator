@@ -1,2 +1,416 @@
 # CRNA-Income-Calculator
 Take home pay calculator for CRNAs
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRNA Financial Reality Check</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.26.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F0EDE8;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;}
+:root{--navy:#0B1F3A;--gold:#C9A84C;--gold-light:#F5E6C0;--gold-dark:#8B6914;--white:#FFFFFF;--surface:#F8F6F1;--border:#E2D9C8;--text:#1A1A1A;--text-sec:#5A5A5A;--text-ter:#8A8A8A;}
+.card{background:var(--white);border-radius:16px;overflow:hidden;width:100%;max-width:700px;box-shadow:0 2px 12px rgba(0,0,0,0.10);}
+.app-header{background:var(--navy);padding:22px 28px 20px;}
+.app-header h1{font-size:21px;font-weight:600;color:#fff;letter-spacing:0.01em;display:flex;align-items:center;gap:10px;}
+.app-header p{font-size:13px;color:#A0AEBE;margin-top:4px;}
+.step-bar{display:flex;background:#0D2544;border-top:1px solid #1A3560;}
+.sbt{flex:1;padding:11px 6px;background:transparent;border:none;border-right:1px solid #1A3560;cursor:pointer;font-size:11px;color:#7A8FA6;display:flex;flex-direction:column;align-items:center;gap:3px;transition:background 0.15s;}
+.sbt:last-child{border-right:none;}
+.sbt.active{background:#162E56;color:var(--gold);}
+.sbt.done{color:#5DCAA5;}
+.sbt .sn{font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;}
+.body{padding:22px 28px;}
+.sec-title{font-size:11px;font-weight:600;color:var(--gold-dark);text-transform:uppercase;letter-spacing:0.08em;margin:20px 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px;}
+.sec-title:first-child{margin-top:0;}
+.row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.row label{font-size:13px;color:var(--text-sec);flex:1;min-width:120px;}
+.val{font-size:13px;font-weight:600;color:var(--text);min-width:72px;text-align:right;}
+input[type=number],select,input[type=text]{font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--white);color:var(--text);outline:none;}
+input[type=number]:focus,select:focus,input[type=text]:focus{border-color:#7A8FA6;}
+input[type=range]{accent-color:var(--navy);cursor:pointer;}
+select{appearance:auto;}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:14px 0;}
+.mc{background:var(--surface);border-radius:8px;padding:12px 14px;border:1px solid var(--border);}
+.mc .ml{font-size:11px;color:var(--text-sec);margin-bottom:4px;}
+.mc .mv{font-size:18px;font-weight:600;color:var(--text);}
+.mc .ms{font-size:11px;color:var(--text-ter);margin-top:2px;}
+.mc.gold{background:var(--gold-light);border-color:#D4B76A;}
+.mc.gold .ml{color:var(--gold-dark);}
+.mc.gold .mv{color:var(--navy);}
+.mc.green{background:#E1F5EE;border-color:#5DCAA5;}
+.mc.green .ml{color:#085041;}
+.mc.green .mv{color:#0F6E56;}
+.mc.red{background:#FCEBEB;border-color:#F09595;}
+.mc.red .ml{color:#791F1F;}
+.mc.red .mv{color:#A32D2D;}
+.ll{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.ll:last-child{border-bottom:none;}
+.ll .lname{color:var(--text-sec);}
+.ll .lval{font-weight:600;color:var(--text);}
+.ll .lval.neg{color:#A32D2D;}
+.ll .lval.pos{color:#0F6E56;}
+.ll.total-row{background:var(--surface);padding:9px 10px;border-radius:6px;margin-top:6px;border-bottom:none;}
+.ll.total-row .lname{font-weight:600;color:var(--text);}
+.nav{display:flex;justify-content:space-between;margin-top:24px;padding-top:14px;border-top:1px solid var(--border);}
+.btn{background:var(--navy);color:var(--gold);border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{background:#162E56;}
+.btn.sec{background:transparent;color:var(--text-sec);border:1px solid var(--border);}
+.btn.sec:hover{background:var(--surface);}
+.info{background:var(--surface);border-left:3px solid var(--gold);padding:10px 13px;font-size:12px;color:var(--text-sec);line-height:1.6;margin:10px 0;border-radius:0 6px 6px 0;}
+.warn{background:#FAEEDA;border-left:3px solid #BA7517;padding:10px 13px;font-size:12px;color:#633806;line-height:1.6;margin:10px 0;border-radius:0 6px 6px 0;}
+.good{background:#E1F5EE;border-left:3px solid #1D9E75;padding:10px 13px;font-size:12px;color:#085041;line-height:1.6;margin:10px 0;border-radius:0 6px 6px 0;}
+.sources{font-size:10px;color:var(--text-ter);line-height:1.7;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
+.bar-legend{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 4px;font-size:11px;color:var(--text-sec);}
+.bl-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:middle;}
+.income-card,.loan-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.income-card-hdr,.loan-card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:13px;font-weight:600;color:var(--navy);}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.badge-w2{background:#E6F1FB;color:#0C447C;}
+.badge-1099{background:var(--gold-light);color:var(--gold-dark);}
+.rm-btn{background:transparent;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:11px;color:var(--text-sec);cursor:pointer;}
+.rm-btn:hover{background:#FCEBEB;border-color:#F09595;color:#A32D2D;}
+.add-btn{background:var(--surface);border:1px solid var(--gold);border-radius:7px;padding:9px 14px;font-size:12px;color:var(--gold-dark);cursor:pointer;width:100%;margin-top:4px;font-weight:500;}
+.add-btn:hover{background:var(--gold-light);}
+.type-toggle{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;width:fit-content;}
+.type-toggle button{padding:6px 16px;background:transparent;border:none;font-size:12px;cursor:pointer;color:var(--text-sec);font-weight:500;}
+.type-toggle button.active-w2{background:var(--navy);color:#fff;font-weight:600;}
+.type-toggle button.active-1099{background:var(--gold);color:var(--navy);font-weight:600;}
+.wo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;}
+@media(max-width:520px){.wo-grid{grid-template-columns:1fr;}}
+.wo-row{display:flex;align-items:flex-start;gap:8px;background:var(--white);border:1px solid var(--border);border-radius:7px;padding:9px 11px;}
+.wo-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--navy);flex-shrink:0;margin-top:2px;}
+.wo-row .wo-label{font-size:12px;color:var(--text-sec);flex:1;}
+.wo-row .wo-amt{font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap;}
+.wo-custom{display:flex;align-items:center;gap:8px;background:#E6F1FB;border:1px solid #B5D4F4;border-radius:7px;padding:9px 11px;margin-top:6px;}
+.wo-custom label{font-size:12px;color:#0C447C;flex:1;}
+footer{text-align:center;padding:12px;font-size:11px;color:var(--text-ter);}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="app-header">
+  <h1><i class="ti ti-stethoscope" aria-hidden="true" style="font-size:20px;color:#C9A84C;"></i>CRNA Financial Reality Check</h1>
+  <p>Know your numbers before you sign your contract.</p>
+</div>
+<div class="step-bar">
+  <button class="sbt active" id="nb1" onclick="goStep(1)"><span class="sn">Step 1</span>Paycheck</button>
+  <button class="sbt" id="nb2" onclick="goStep(2)"><span class="sn">Step 2</span>Student loans</button>
+  <button class="sbt" id="nb3" onclick="goStep(3)"><span class="sn">Step 3</span>Reality check</button>
+</div>
+
+<div class="body">
+
+<!-- STEP 1 -->
+<div id="s1">
+  <div class="sec-title">Filing status &amp; location</div>
+  <div class="row">
+    <label>Filing status</label>
+    <select id="filing" onchange="calc()" style="width:210px;flex:none;">
+      <option value="single">Single</option>
+      <option value="mfj" selected>Married, filing jointly</option>
+      <option value="hoh">Head of household</option>
+    </select>
+  </div>
+  <div class="row">
+    <label>State</label>
+    <select id="state-sel" onchange="calc()" style="width:230px;flex:none;">
+      <option value="AL">Alabama (5%)</option><option value="AK">Alaska (0%)</option><option value="AZ">Arizona (2.5%)</option><option value="AR">Arkansas (4.4%)</option><option value="CA">California (up to 13.3%)</option><option value="CO">Colorado (4.4%)</option><option value="CT">Connecticut (up to 6.99%)</option><option value="DE">Delaware (up to 6.6%)</option><option value="DC">D.C. (up to 10.75%)</option><option value="FL">Florida (0%)</option><option value="GA">Georgia (5.39%)</option><option value="HI">Hawaii (up to 11%)</option><option value="ID">Idaho (5.8%)</option><option value="IL">Illinois (4.95%)</option><option value="IN">Indiana (3.05%)</option><option value="IA">Iowa (5.7%)</option><option value="KS">Kansas (up to 5.7%)</option><option value="KY">Kentucky (4%)</option><option value="LA">Louisiana (up to 4.25%)</option><option value="ME">Maine (up to 7.15%)</option><option value="MD">Maryland (up to 5.75%)</option><option value="MA">Massachusetts (5%)</option><option value="MI">Michigan (4.25%)</option><option value="MN">Minnesota (up to 9.85%)</option><option value="MS">Mississippi (4.7%)</option><option value="MO">Missouri (4.8%)</option><option value="MT">Montana (up to 6.75%)</option><option value="NE">Nebraska (up to 6.64%)</option><option value="NV">Nevada (0%)</option><option value="NH">New Hampshire (0%)</option><option value="NJ">New Jersey (up to 10.75%)</option><option value="NM">New Mexico (up to 5.9%)</option><option value="NY" selected>New York (up to 10.9%)</option><option value="NC">North Carolina (4.5%)</option><option value="ND">North Dakota (up to 2.5%)</option><option value="OH">Ohio (up to 3.5%)</option><option value="OK">Oklahoma (4.75%)</option><option value="OR">Oregon (up to 9.9%)</option><option value="PA">Pennsylvania (3.07%)</option><option value="RI">Rhode Island (up to 5.99%)</option><option value="SC">South Carolina (up to 6.2%)</option><option value="SD">South Dakota (0%)</option><option value="TN">Tennessee (0%)</option><option value="TX">Texas (0%)</option><option value="UT">Utah (4.55%)</option><option value="VT">Vermont (up to 8.75%)</option><option value="VA">Virginia (up to 5.75%)</option><option value="WA">Washington (0%)</option><option value="WV">West Virginia (up to 5.12%)</option><option value="WI">Wisconsin (up to 7.65%)</option><option value="WY">Wyoming (0%)</option>
+    </select>
+  </div>
+  <div class="row">
+    <label>City <span style="font-size:11px;color:var(--text-ter);">(local tax cities only)</span></label>
+    <input type="text" id="city-input" placeholder="e.g. New York City" oninput="calc()" style="width:210px;flex:none;">
+  </div>
+  <div id="city-notice" style="display:none;" class="info"></div>
+
+  <div class="sec-title">Income sources</div>
+  <div id="income-cards"></div>
+  <button class="add-btn" onclick="addIncome()"><i class="ti ti-plus" aria-hidden="true"></i> Add income source</button>
+
+  <div class="sec-title">Pre-tax deductions (W-2)</div>
+  <div class="row">
+    <label>401(k) / 403(b) %<span style="font-size:11px;color:var(--text-ter);display:block;">2026 limit: $24,500</span></label>
+    <input type="range" min="0" max="100" step="1" value="10" id="k401pct" oninput="syncK();calc();" style="width:130px;flex:none;">
+    <span class="val" id="k401pct-val" style="min-width:115px;">10%</span>
+  </div>
+  <div class="row">
+    <label>Health insurance (employee share)</label>
+    <input type="range" min="0" max="800" step="10" value="114" id="health-mo" oninput="document.getElementById('hmo-v').textContent='$'+this.value+'/mo';calc();" style="width:130px;flex:none;">
+    <span class="val" id="hmo-v">$114/mo</span>
+  </div>
+  <div class="row">
+    <label>Disability insurance</label>
+    <input type="range" min="0" max="500" step="10" value="50" id="dis-mo" oninput="document.getElementById('dmo-v').textContent='$'+this.value+'/mo';calc();" style="width:130px;flex:none;">
+    <span class="val" id="dmo-v">$50/mo</span>
+  </div>
+
+  <div id="wo-section" style="display:none;">
+    <div class="sec-title">1099 write-offs &amp; deductions</div>
+    <div class="info" style="margin-bottom:12px;"><strong>SE tax deduction:</strong> As a 1099 worker you pay 15.3% self-employment tax but can deduct half (~7.65%) from federal taxable income — applied automatically.</div>
+    <div id="wo-cards"></div>
+    <div class="wo-custom">
+      <label>Other business deductions (annual total)</label>
+      <input type="number" id="wo-custom" value="0" min="0" step="500" oninput="calc()" style="width:100px;text-align:right;">
+    </div>
+  </div>
+
+  <div id="s1-out"></div>
+  <div class="nav"><div></div><button class="btn" onclick="goStep(2)">Student loans <i class="ti ti-arrow-right" aria-hidden="true"></i></button></div>
+</div>
+
+<!-- STEP 2 -->
+<div id="s2" style="display:none;">
+  <div class="sec-title">Your loans</div>
+  <div id="loan-cards"></div>
+  <button class="add-btn" onclick="addLoan()"><i class="ti ti-plus" aria-hidden="true"></i> Add another loan</button>
+  <div id="s2-out" style="margin-top:14px;"></div>
+  <div class="nav">
+    <button class="btn sec" onclick="goStep(1)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back</button>
+    <button class="btn" onclick="goStep(3)">Reality check <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div id="s3" style="display:none;">
+  <div class="sec-title">Monthly living expenses</div>
+  <div class="row"><label>Rent / mortgage</label><input type="range" min="500" max="8000" step="50" value="1784" id="exp-rent" oninput="document.getElementById('er-v').textContent='$'+Number(this.value).toLocaleString();calc();" style="width:130px;flex:none;"><span class="val" id="er-v">$1,784</span></div>
+  <div class="row"><label>Car payment</label><input type="range" min="0" max="1500" step="25" value="523" id="exp-car" oninput="document.getElementById('ec-v').textContent='$'+Number(this.value).toLocaleString();calc();" style="width:130px;flex:none;"><span class="val" id="ec-v">$523</span></div>
+  <div class="row"><label>Car insurance</label><input type="range" min="50" max="500" step="10" value="150" id="exp-carins" oninput="document.getElementById('eci-v').textContent='$'+Number(this.value).toLocaleString();calc();" style="width:130px;flex:none;"><span class="val" id="eci-v">$150</span></div>
+  <div class="row"><label>Groceries</label><input type="range" min="100" max="1200" step="25" value="475" id="exp-groc" oninput="document.getElementById('eg-v').textContent='$'+Number(this.value).toLocaleString();calc();" style="width:130px;flex:none;"><span class="val" id="eg-v">$475</span></div>
+  <div class="row"><label>Utilities</label><input type="range" min="50" max="600" step="10" value="210" id="exp-util" oninput="document.getElementById('eu-v').textContent='$'+Number(this.value).toLocaleString();calc();" style="width:130px;flex:none;"><span class="val" id="eu-v">$210</span></div>
+  <div class="row"><label>Other (phone, subscriptions, fun…)</label><input type="range" min="0" max="3000" step="50" value="600" id="exp-other" oninput="document.getElementById('eo-v').textContent='$'+Number(this.value).toLocaleString();calc();" style="width:130px;flex:none;"><span class="val" id="eo-v">$600</span></div>
+  <div id="s3-out"></div>
+  <div id="s3-chart-wrap" style="margin-top:16px;"></div>
+  <div class="nav">
+    <button class="btn sec" onclick="goStep(2)"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back</button>
+  </div>
+</div>
+
+<div class="sources">
+  <strong>Data sources:</strong> IRS Rev. Proc. 2024-40 (2025 federal brackets, standard deductions $15K single / $30K MFJ) &bull; SSA 2025 FICA wage base $176,100 &bull; IRS Notice 2024-80 (Medicare surtax) &bull; 2026 401(k)/403(b) limit $24,500 &bull; IRS Pub. 535 &amp; 587 (1099 business deductions) &bull; IRC §164(f) SE tax deduction &bull; IRC §199A QBI deduction &bull; StudentAid.gov 2025-26 loan rates &bull; KFF 2024 Employer Health Benefits Survey &bull; BLS 2023 Consumer Expenditure Survey. <strong>This tool is for educational purposes only and does not constitute tax or financial advice.</strong>
+</div>
+</div>
+</div>
+<footer>CRNA Financial Reality Check &bull; Built for nursing anesthesia students</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+var K401_LIMIT=24500;
+var stackChart=null;
+var incomes=[{id:0,type:'w2',subtype:'crna-employed',amount:200000,label:'Primary CRNA income'}];
+var incomeId=1;
+var loans=[{id:0,type:'gradUnsub',balance:150000,rate:7.94,plan:'standard',deferred:true}];
+var loanId=1;
+
+var INCOME_SUBTYPES={
+  w2:[{val:'crna-employed',label:'CRNA — hospital employed'},{val:'crna-group',label:'CRNA — anesthesia group'},{val:'crna-va',label:'CRNA — VA / federal'},{val:'part-time',label:'Part-time / per diem'},{val:'spouse',label:'Spouse / partner income'},{val:'other-w2',label:'Other W-2 employment'}],
+  '1099':[{val:'locums',label:'Locums / travel CRNA'},{val:'crna-owner',label:'CRNA practice owner'},{val:'independent',label:'Independent contractor'},{val:'consulting',label:'Consulting / education'},{val:'rental',label:'Rental income'},{val:'other-1099',label:'Other 1099 / self-employed'}]
+};
+
+var WO_OPTIONS=[
+  {id:'malpractice',label:'Malpractice insurance',desc:'Own policy (1099 must cover)',amount:15000,checked:true},
+  {id:'health',label:'Self-employed health ins.',desc:'Premiums for you + family',amount:7200,checked:true},
+  {id:'homeoffice',label:'Home office deduction',desc:'Dedicated workspace sq ft',amount:1800,checked:false},
+  {id:'phone',label:'Phone &amp; internet (biz %)',desc:'Business-use portion',amount:1200,checked:false},
+  {id:'cme',label:'CME / continuing education',desc:'Courses, conferences, books',amount:2500,checked:true},
+  {id:'travel',label:'Business travel &amp; lodging',desc:'Locums travel not reimbursed',amount:4000,checked:false},
+  {id:'equipment',label:'Medical equipment / supplies',desc:'Stethoscope, monitors, etc.',amount:800,checked:false},
+  {id:'vehicle',label:'Vehicle (business use %)',desc:'Mileage or actual expense',amount:3000,checked:false},
+  {id:'retirement-sep',label:'SEP-IRA / Solo 401(k)',desc:'Up to 25% net SE income',amount:20000,checked:true},
+  {id:'qbi',label:'QBI deduction (§199A)',desc:'Up to 20% of qualified biz income',amount:0,checked:true,computed:true}
+];
+
+function fmt(n){return '$'+Math.round(n).toLocaleString();}
+function fmtD(n){return n<0?'-$'+Math.round(Math.abs(n)).toLocaleString():'$'+Math.round(n).toLocaleString();}
+
+var ST={AL:function(i){return bT(i,[[0,500,.02],[500,3000,.04],[3000,1e9,.05]]);},AK:function(){return 0;},AZ:function(i){return i*.025;},AR:function(i){return bT(i,[[0,4300,.02],[4300,8500,.04],[8500,1e9,.044]]);},CA:function(i){return bT(i,[[0,10412,.01],[10412,24684,.02],[24684,38959,.04],[38959,54081,.06],[54081,68350,.08],[68350,349137,.093],[349137,418961,.103],[418961,698274,.113],[698274,1e9,.133]]);},CO:function(i){return i*.044;},CT:function(i){return bT(i,[[0,10000,.03],[10000,50000,.05],[50000,100000,.055],[100000,200000,.06],[200000,250000,.065],[250000,500000,.069],[500000,1e9,.0699]]);},DE:function(i){return bT(i,[[0,2000,0],[2000,5000,.022],[5000,10000,.039],[10000,20000,.048],[20000,25000,.052],[25000,60000,.055],[60000,1e9,.066]]);},DC:function(i){return bT(i,[[0,10000,.04],[10000,40000,.06],[40000,60000,.065],[60000,250000,.085],[250000,500000,.0925],[500000,1e9,.1075]]);},FL:function(){return 0;},GA:function(i){return bT(i,[[0,750,.01],[750,2250,.02],[2250,3750,.03],[3750,5250,.04],[5250,7000,.05],[7000,1e9,.0539]]);},HI:function(i){return bT(i,[[0,2400,.014],[2400,4800,.032],[4800,9600,.055],[9600,14400,.064],[14400,19200,.068],[19200,24000,.072],[24000,48000,.076],[48000,150000,.079],[150000,175000,.0825],[175000,1e9,.11]]);},ID:function(i){return bT(i,[[0,4489,.01],[4489,1e9,.058]]);},IL:function(i){return i*.0495;},IN:function(i){return i*.0305;},IA:function(i){return bT(i,[[0,6210,.044],[6210,31050,.048],[31050,1e9,.057]]);},KS:function(i){return bT(i,[[0,15000,.031],[15000,30000,.0525],[30000,1e9,.057]]);},KY:function(i){return i*.04;},LA:function(i){return bT(i,[[0,12500,.0185],[12500,50000,.035],[50000,1e9,.0425]]);},ME:function(i){return bT(i,[[0,24500,.058],[24500,58050,.0675],[58050,1e9,.0715]]);},MD:function(i){return bT(i,[[0,1000,.02],[1000,2000,.03],[2000,3000,.04],[3000,100000,.0475],[100000,125000,.05],[125000,150000,.0525],[150000,250000,.055],[250000,1e9,.0575]]);},MA:function(i){return i*.05;},MI:function(i){return i*.0425;},MN:function(i){return bT(i,[[0,31690,.0535],[31690,104090,.068],[104090,193240,.0785],[193240,1e9,.0985]]);},MS:function(i){return bT(i,[[0,10000,0],[10000,1e9,.047]]);},MO:function(i){return bT(i,[[0,1207,0],[1207,2414,.015],[2414,3621,.02],[3621,4828,.025],[4828,6035,.03],[6035,7242,.035],[7242,8432,.04],[8432,1e9,.048]]);},MT:function(i){return bT(i,[[0,3600,.01],[3600,6300,.02],[6300,9700,.03],[9700,13000,.04],[13000,16800,.05],[16800,21600,.06],[21600,1e9,.0675]]);},NE:function(i){return bT(i,[[0,3700,.0246],[3700,22170,.0351],[22170,35730,.0501],[35730,1e9,.0664]]);},NV:function(){return 0;},NH:function(){return 0;},NJ:function(i){return bT(i,[[0,20000,.014],[20000,35000,.0175],[35000,40000,.035],[40000,75000,.05525],[75000,500000,.0637],[500000,1000000,.0897],[1000000,1e9,.1075]]);},NM:function(i){return bT(i,[[0,5500,.017],[5500,11000,.032],[11000,16000,.047],[16000,210000,.049],[210000,1e9,.059]]);},NY:function(i){return bT(i,[[0,17150,.04],[17150,23600,.045],[23600,27900,.0525],[27900,161550,.0585],[161550,323200,.0625],[323200,2155350,.0685],[2155350,5000000,.0965],[5000000,25000000,.103],[25000000,1e9,.109]]);},NC:function(i){return i*.045;},ND:function(i){return bT(i,[[0,47150,.011],[47150,1e9,.025]]);},OH:function(i){return bT(i,[[0,26050,0],[26050,100000,.02765],[100000,1e9,.035]]);},OK:function(i){return bT(i,[[0,1000,.0025],[1000,2500,.0075],[2500,3750,.0175],[3750,4900,.0275],[4900,7200,.0375],[7200,1e9,.0475]]);},OR:function(i){return bT(i,[[0,4050,.0475],[4050,10200,.0675],[10200,125000,.0875],[125000,1e9,.099]]);},PA:function(i){return i*.0307;},RI:function(i){return bT(i,[[0,73450,.0375],[73450,167000,.0475],[167000,1e9,.0599]]);},SC:function(i){return bT(i,[[0,3460,0],[3460,17330,.03],[17330,1e9,.062]]);},SD:function(){return 0;},TN:function(){return 0;},TX:function(){return 0;},UT:function(i){return i*.0455;},VT:function(i){return bT(i,[[0,45400,.0335],[45400,110050,.066],[110050,229550,.076],[229550,1e9,.0875]]);},VA:function(i){return bT(i,[[0,3000,.02],[3000,5000,.03],[5000,17000,.05],[17000,1e9,.0575]]);},WA:function(){return 0;},WV:function(i){return bT(i,[[0,10000,.0236],[10000,25000,.0315],[25000,40000,.0354],[40000,60000,.0472],[60000,1e9,.0512]]);},WI:function(i){return bT(i,[[0,14320,.035],[14320,28640,.044],[28640,315310,.053],[315310,1e9,.0765]]);},WY:function(){return 0;}};
+
+var CITY={'new york city':function(i){return bT(i,[[0,12000,.03078],[12000,25000,.03762],[25000,50000,.03819],[50000,1e9,.03876]]);},'nyc':function(i){return bT(i,[[0,12000,.03078],[12000,25000,.03762],[25000,50000,.03819],[50000,1e9,.03876]]);},'philadelphia':function(i){return i*.0375;},'detroit':function(i){return i*.024;},'kansas city':function(i){return i*.01;},'st. louis':function(i){return i*.01;},'saint louis':function(i){return i*.01;},'columbus':function(i){return i*.025;},'cleveland':function(i){return i*.025;},'cincinnati':function(i){return i*.019;},'pittsburgh':function(i){return i*.03;},'baltimore':function(i){return i*.032;},'yonkers':function(i){return i*.016675;},'portland':function(i){return i*.01539;}};
+var CITY_L={'new york city':'NYC (3.078–3.876%)','nyc':'NYC (3.078–3.876%)','philadelphia':'Philadelphia (3.75%)','detroit':'Detroit (2.4%)','kansas city':'Kansas City, MO (1%)','st. louis':'St. Louis (1%)','saint louis':'St. Louis (1%)','columbus':'Columbus (2.5%)','cleveland':'Cleveland (2.5%)','cincinnati':'Cincinnati (1.9%)','pittsburgh':'Pittsburgh (3%)','baltimore':'Baltimore (3.2%)','yonkers':'Yonkers (1.67%)','portland':'Portland, OR (1.54%)'};
+
+function bT(income,brackets){var tax=0;for(var i=0;i<brackets.length;i++){var lo=brackets[i][0],hi=brackets[i][1],r=brackets[i][2];if(income<=lo)break;tax+=(Math.min(income,hi)-lo)*r;}return tax;}
+function fedTax(taxable,status){var sd={single:15000,mfj:30000,hoh:22500};var agi=Math.max(0,taxable-(sd[status]||30000));var b={single:[[0,11925,.10],[11925,48475,.12],[48475,103350,.22],[103350,197300,.24],[197300,250525,.32],[250525,626350,.35],[626350,1e9,.37]],mfj:[[0,23850,.10],[23850,96950,.12],[96950,206700,.22],[206700,394600,.24],[394600,501050,.32],[501050,751600,.35],[751600,1e9,.37]],hoh:[[0,17000,.10],[17000,64850,.12],[64850,103350,.22],[103350,197300,.24],[197300,250500,.32],[250500,626350,.35],[626350,1e9,.37]]};return bT(agi,b[status]||b.mfj);}
+function ficaW2(g){return Math.min(g,176100)*.062+g*.0145;}
+function ficaSE(n){var se=n*.9235;return Math.min(se,176100)*.124+se*.029;}
+
+function syncK(){var pct=parseFloat(document.getElementById('k401pct').value)||0;var w2=incomes.filter(function(x){return x.type==='w2';}).reduce(function(a,x){return a+x.amount;},0);var capped=Math.min(w2*(pct/100),K401_LIMIT);document.getElementById('k401pct-val').textContent=pct+'% ('+fmt(capped)+')';}
+
+function renderIncomeCards(){
+  var html='';
+  incomes.forEach(function(inc,idx){
+    var subtypes=INCOME_SUBTYPES[inc.type]||INCOME_SUBTYPES['1099'];
+    var subOpts=subtypes.map(function(s){return '<option value="'+s.val+'"'+(inc.subtype===s.val?' selected':'')+'>'+s.label+'</option>';}).join('');
+    html+='<div class="income-card"><div class="income-card-hdr"><span>Income source '+(idx+1)+'</span><div style="display:flex;align-items:center;gap:8px;"><span class="badge '+(inc.type==='w2'?'badge-w2':'badge-1099')+'">'+(inc.type==='w2'?'W-2':'1099')+'</span>'+(incomes.length>1?'<button class="rm-btn" onclick="removeIncome('+inc.id+')">&#x1F5D1; Remove</button>':'')+'</div></div>'
+      +'<div class="row" style="margin-bottom:8px;"><label style="font-size:12px;">Income type</label><div class="type-toggle"><button onclick="setIncomeType('+inc.id+',\'w2\')" class="'+(inc.type==='w2'?'active-w2':'')+'">W-2</button><button onclick="setIncomeType('+inc.id+',\'1099\')" class="'+(inc.type==='1099'?'active-1099':'')+'">1099</button></div></div>'
+      +'<div class="row" style="margin-bottom:8px;"><label style="font-size:12px;">Category</label><select style="width:210px;flex:none;font-size:12px;" onchange="setIncomeSub('+inc.id+',this.value)">'+subOpts+'</select></div>'
+      +'<div class="row"><label style="font-size:12px;">Annual gross income</label><input type="number" min="0" max="1000000" step="1000" value="'+inc.amount+'" style="width:130px;text-align:right;" oninput="setIncomeAmt('+inc.id+',parseFloat(this.value)||0)"></div>'
+      +'</div>';
+  });
+  document.getElementById('income-cards').innerHTML=html;
+  var has1099=incomes.some(function(x){return x.type==='1099';});
+  document.getElementById('wo-section').style.display=has1099?'block':'none';
+  renderWOCards();syncK();
+}
+
+function renderWOCards(){
+  var has1099=incomes.some(function(x){return x.type==='1099';});
+  if(!has1099)return;
+  var inc1099=incomes.filter(function(x){return x.type==='1099';}).reduce(function(a,x){return a+x.amount;},0);
+  var seT=ficaSE(inc1099);var seDed=seT/2;var qbi=inc1099*.20;
+  var html='<div class="wo-grid">';
+  WO_OPTIONS.forEach(function(wo){
+    var amt=wo.id==='qbi'?qbi:wo.amount;
+    var desc=wo.id==='qbi'?'~'+fmt(qbi)+' (20% of 1099 income)':wo.desc;
+    html+='<div class="wo-row"><input type="checkbox" id="wo-'+wo.id+'" '+(wo.checked?'checked':'')+' onchange="calc()"><div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+wo.label+'</div><div style="font-size:11px;color:var(--text-sec);">'+desc+'</div></div><div style="font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap;">'+fmt(amt)+'</div></div>';
+  });
+  html+='</div><div class="info" style="margin-top:8px;">SE tax deduction (auto-applied): <strong>'+fmt(seDed)+'</strong> — half of your '+fmt(seT)+' SE tax is deductible from federal AGI per IRC §164(f).</div>';
+  document.getElementById('wo-cards').innerHTML=html;
+}
+
+function addIncome(){incomes.push({id:incomeId++,type:'w2',subtype:'part-time',amount:30000});renderIncomeCards();calc();}
+function removeIncome(id){incomes=incomes.filter(function(x){return x.id!==id;});renderIncomeCards();calc();}
+function setIncomeType(id,type){var i=incomes.find(function(x){return x.id===id;});if(i){i.type=type;i.subtype=INCOME_SUBTYPES[type][0].val;}renderIncomeCards();calc();}
+function setIncomeSub(id,val){var i=incomes.find(function(x){return x.id===id;});if(i)i.subtype=val;calc();}
+function setIncomeAmt(id,val){var i=incomes.find(function(x){return x.id===id;});if(i)i.amount=val;syncK();calc();}
+
+function getWOTotal(inc1099){var qbi=inc1099*.20;var total=0;WO_OPTIONS.forEach(function(wo){var cb=document.getElementById('wo-'+wo.id);if(cb&&cb.checked)total+=wo.id==='qbi'?qbi:wo.amount;});var ce=document.getElementById('wo-custom');if(ce)total+=parseFloat(ce.value)||0;return total;}
+
+function loanPmt(bal,rate,mo){if(rate===0)return bal/mo;var r=rate/100/12;return bal*r*Math.pow(1+r,mo)/(Math.pow(1+r,mo)-1);}
+function loanInt(bal,rate,mo){return loanPmt(bal,rate,mo)*mo-bal;}
+function loanMo(bal,rate,gross,plan){if(plan==='standard')return 120;if(plan==='extended')return 300;if(plan==='ibr'){var d=Math.max(0,gross-21870)*.10/12;if(d<=0)return 300;var r=rate/100/12;if(r===0)return Math.ceil(bal/d);return Math.min(Math.ceil(Math.log(d/(d-r*bal))/Math.log(1+r)),240);}if(plan==='save'){var d2=Math.max(0,gross-32805)*.05/12;if(d2<=0)return 300;var r2=rate/100/12;if(r2===0)return Math.ceil(bal/d2);return Math.min(Math.ceil(Math.log(d2/(d2-r2*bal))/Math.log(1+r2)),300);}return 120;}
+
+function renderLoanCards(){
+  var html='';
+  loans.forEach(function(l,idx){
+    html+='<div class="loan-card"><div class="loan-card-title"><span>Loan '+(idx+1)+'</span>'+(loans.length>1?'<button class="rm-btn" onclick="removeLoan('+l.id+')">&#x1F5D1; Remove</button>':'')+'</div>'
+      +'<div class="row"><label>Loan type</label><select style="width:215px;flex:none;font-size:12px;" onchange="loanField('+l.id+',\'type\',this.value)"><option value="gradUnsub" '+(l.type==='gradUnsub'?'selected':'')+'>Grad Unsubsidized (7.94%)</option><option value="gradPlus" '+(l.type==='gradPlus'?'selected':'')+'>Grad PLUS (8.94%)</option><option value="undergradSub" '+(l.type==='undergradSub'?'selected':'')+'>Undergrad Subsidized (6.39%)</option><option value="undergradUnsub" '+(l.type==='undergradUnsub'?'selected':'')+'>Undergrad Unsubsidized (6.39%)</option></select></div>'
+      +'<div class="row"><label>Balance</label><input type="number" min="1000" max="500000" step="1000" value="'+l.balance+'" style="width:120px;text-align:right;" onchange="loanField('+l.id+',\'balance\',parseFloat(this.value)||0);calc();"></div>'
+      +'<div class="row"><label>Interest rate (% / yr)</label><input type="number" min="0" max="20" step="0.01" value="'+l.rate+'" style="width:90px;text-align:right;" onchange="loanField('+l.id+',\'rate\',parseFloat(this.value)||0);calc();"></div>'
+      +'<div class="row"><label>Repayment plan</label><select style="width:215px;flex:none;font-size:12px;" onchange="loanField('+l.id+',\'plan\',this.value)"><option value="standard" '+(l.plan==='standard'?'selected':'')+'>Standard (10-year)</option><option value="extended" '+(l.plan==='extended'?'selected':'')+'>Extended (25-year)</option><option value="ibr" '+(l.plan==='ibr'?'selected':'')+'>IBR (10% discretionary)</option><option value="save" '+(l.plan==='save'?'selected':'')+'>SAVE (5% discretionary)</option></select></div>'
+      +'<div class="row"><label>Deferred during CRNA school?</label><select style="width:90px;flex:none;font-size:12px;" onchange="loanField('+l.id+',\'deferred\',this.value===\'true\')"><option value="true" '+(l.deferred?'selected':'')+'>Yes</option><option value="false" '+(!l.deferred?'selected':'')+'>No</option></select></div>'
+      +'</div>';
+  });
+  document.getElementById('loan-cards').innerHTML=html;
+}
+function addLoan(){loans.push({id:loanId++,type:'gradUnsub',balance:50000,rate:7.94,plan:'standard',deferred:false});renderLoanCards();calc();}
+function removeLoan(id){loans=loans.filter(function(l){return l.id!==id;});renderLoanCards();calc();}
+function loanField(id,field,val){var l=loans.find(function(x){return x.id===id;});if(!l)return;l[field]=val;if(field==='type')l.rate={gradUnsub:7.94,gradPlus:8.94,undergradSub:6.39,undergradUnsub:6.39}[val]||7.94;renderLoanCards();calc();}
+
+function calc(){
+  syncK();
+  var status=document.getElementById('filing').value;
+  var stateKey=document.getElementById('state-sel').value;
+  var cityKey=(document.getElementById('city-input').value||'').toLowerCase().trim();
+  var k401pct=parseFloat(document.getElementById('k401pct').value)||0;
+  var healthAnn=(parseFloat(document.getElementById('health-mo').value)||0)*12;
+  var disAnn=(parseFloat(document.getElementById('dis-mo').value)||0)*12;
+  var w2Total=incomes.filter(function(x){return x.type==='w2';}).reduce(function(a,x){return a+x.amount;},0);
+  var inc1099=incomes.filter(function(x){return x.type==='1099';}).reduce(function(a,x){return a+x.amount;},0);
+  var grossTotal=w2Total+inc1099;
+  var k401=Math.min(w2Total*(k401pct/100),K401_LIMIT);
+  var seT=inc1099>0?ficaSE(inc1099):0;
+  var seDed=seT/2;
+  var woTotal=inc1099>0?getWOTotal(inc1099):0;
+  var has1099=inc1099>0;
+  var w2Fica=ficaW2(w2Total);
+  var addlThresh={single:200000,mfj:250000,hoh:200000}[status]||250000;
+  var addlMed=grossTotal>addlThresh?(grossTotal-addlThresh)*.009:0;
+  var totalFica=w2Fica+seT+addlMed;
+  var fedTaxable=Math.max(0,grossTotal-k401-healthAnn-seDed-Math.min(woTotal,inc1099*.95));
+  var fedT=fedTax(fedTaxable,status);
+  var stateBase=Math.max(0,grossTotal-k401-Math.min(woTotal*.5,inc1099*.4));
+  var stateT=(ST[stateKey]||function(){return 0;})(stateBase);
+  var cityFn=CITY[cityKey];
+  var cityT=cityFn?cityFn(stateBase):0;
+  var totalTax=fedT+totalFica+stateT+cityT;
+  var netAnn=grossTotal-k401-healthAnn-disAnn-totalTax;
+  var netMo=netAnn/12;
+  var effRate=totalTax/grossTotal*100;
+
+  var cn=document.getElementById('city-notice');
+  if(cityFn){cn.style.display='block';cn.innerHTML='&#x1F4CD; '+CITY_L[cityKey]+' local income tax applied.';}
+  else if(cityKey.length>2){cn.style.display='block';cn.innerHTML='No local income tax found for "'+cityKey+'". Supported: NYC, Philadelphia, Detroit, Kansas City, St. Louis, Columbus, Cleveland, Cincinnati, Pittsburgh, Baltimore, Yonkers, Portland OR.';}
+  else cn.style.display='none';
+
+  if(document.getElementById('s1').style.display!=='none'){
+    var incLines=incomes.map(function(inc){
+      var sub=(INCOME_SUBTYPES[inc.type]||[]).find(function(s){return s.val===inc.subtype;})||{label:inc.subtype};
+      return '<div class="ll"><span class="lname"><span class="badge '+(inc.type==='w2'?'badge-w2':'badge-1099')+'" style="margin-right:6px;">'+(inc.type==='w2'?'W-2':'1099')+'</span>'+sub.label+'</span><span class="lval">'+fmt(inc.amount)+'</span></div>';
+    }).join('');
+    document.getElementById('s1-out').innerHTML='<div class="sec-title" style="margin-top:16px;">Paycheck breakdown</div>'
+      +incLines
+      +(incomes.length>1?'<div class="ll total-row" style="margin-bottom:4px;"><span class="lname">Total gross income</span><span class="lval">'+fmt(grossTotal)+'</span></div>':'')
+      +'<div class="ll"><span class="lname">401(k)/403(b) contribution</span><span class="lval neg">-'+fmt(k401)+'</span></div>'
+      +'<div class="ll"><span class="lname">Health insurance (employee share)</span><span class="lval neg">-'+fmt(healthAnn)+'</span></div>'
+      +(has1099?'<div class="ll"><span class="lname" style="color:#8B6914;">SE tax deduction (§164f)</span><span class="lval" style="color:#0F6E56;">-'+fmt(seDed)+'</span></div>':'')
+      +(has1099&&woTotal>0?'<div class="ll"><span class="lname" style="color:#8B6914;">1099 write-offs applied</span><span class="lval" style="color:#0F6E56;">-'+fmt(Math.min(woTotal,inc1099*.95))+'</span></div>':'')
+      +'<div class="ll" style="background:#FFF8F0;padding:6px 8px;border-radius:5px;margin:2px 0;"><span class="lname" style="color:#633806;">Federal income tax</span><span class="lval neg">-'+fmt(fedT)+'</span></div>'
+      +'<div class="ll" style="background:#FFF8F0;padding:6px 8px;border-radius:5px;margin:2px 0;"><span class="lname" style="color:#633806;">FICA / SE tax'+(grossTotal>addlThresh?' (+0.9% surtax)':'')+'</span><span class="lval neg">-'+fmt(totalFica)+'</span></div>'
+      +'<div class="ll" style="background:#FFF8F0;padding:6px 8px;border-radius:5px;margin:2px 0;"><span class="lname" style="color:#633806;">State income tax ('+stateKey+')</span><span class="lval neg">-'+fmt(stateT)+'</span></div>'
+      +(cityFn?'<div class="ll" style="background:#FFF8F0;padding:6px 8px;border-radius:5px;margin:2px 0;"><span class="lname" style="color:#633806;">City income tax</span><span class="lval neg">-'+fmt(cityT)+'</span></div>':'')
+      +'<div class="ll"><span class="lname">Disability insurance</span><span class="lval neg">-'+fmt(disAnn)+'</span></div>'
+      +'<div class="ll total-row"><span class="lname">Net annual take-home</span><span class="lval pos">'+fmt(netAnn)+'</span></div>'
+      +'<div class="mgrid" style="margin-top:10px;">'
+      +'<div class="mc gold"><div class="ml">Monthly take-home</div><div class="mv">'+fmt(netMo)+'</div><div class="ms">after all deductions</div></div>'
+      +'<div class="mc"><div class="ml">Effective tax rate</div><div class="mv">'+effRate.toFixed(1)+'%</div><div class="ms">total taxes / gross</div></div>'
+      +'<div class="mc"><div class="ml">Total taxes</div><div class="mv">'+fmt(totalTax)+'</div></div>'
+      +(has1099?'<div class="mc green"><div class="ml">Write-off savings</div><div class="mv">'+fmt(Math.min(woTotal,inc1099*.95)*.30)+'</div><div class="ms">est. ~30% marginal rate</div></div>':'')
+      +'</div>';
+  }
+
+  if(document.getElementById('s2').style.display!=='none'){
+    var lHtml='';var totalLMo=0;
+    loans.forEach(function(l){
+      var bal=l.deferred?l.balance+l.balance*(l.rate/100)*2.5:l.balance;
+      var mo=loanMo(bal,l.rate,grossTotal,l.plan);
+      var pmt=loanPmt(bal,l.rate,mo);var tInt=loanInt(bal,l.rate,mo);totalLMo+=pmt;
+      var tL={gradUnsub:'Grad Unsubsidized',gradPlus:'Grad PLUS',undergradSub:'Undergrad Subsidized',undergradUnsub:'Undergrad Unsubsidized'}[l.type]||l.type;
+      var pL={standard:'Standard 10-yr',extended:'Extended 25-yr',ibr:'IBR',save:'SAVE'}[l.plan]||l.plan;
+      lHtml+='<div class="ll"><span class="lname">'+tL+' — '+pL+'</span><span class="lval">'+fmt(pmt)+'/mo</span></div>';
+      lHtml+='<div class="ll"><span class="lname" style="font-size:12px;padding-left:12px;">Payoff: '+Math.round(mo/12*10)/10+' yrs &bull; Total interest: '+fmt(tInt)+(l.deferred?' (incl. ~'+fmt(l.balance*(l.rate/100)*2.5)+' capitalized)':'')+'</span><span></span></div>';
+    });
+    lHtml+='<div class="ll total-row"><span class="lname">Total monthly loan payments</span><span class="lval neg">'+fmt(totalLMo)+'</span></div>';
+    document.getElementById('s2-out').innerHTML='<div class="sec-title">Loan summary</div>'+lHtml;
+  }
+
+  if(document.getElementById('s3').style.display!=='none'){
+    var rent=parseFloat(document.getElementById('exp-rent').value)||0;
+    var car=parseFloat(document.getElementById('exp-car').value)||0;
+    var ci=parseFloat(document.getElementById('exp-carins').value)||0;
+    var groc=parseFloat(document.getElementById('exp-groc').value)||0;
+    var util=parseFloat(document.getElementById('exp-util').value)||0;
+    var oth=parseFloat(document.getElementById('exp-other').value)||0;
+    var totalExpMo=rent+car+ci+groc+util+oth;
+    var lMoFin=0;
+    loans.forEach(function(l){var bal=l.deferred?l.balance+l.balance*(l.rate/100)*2.5:l.balance;var mo=loanMo(bal,l.rate,grossTotal,l.plan);lMoFin+=loanPmt(bal,l.rate,mo);});
+    var surplus=netMo-lMoFin-totalExpMo;var sAnn=surplus*12;
+    var sClass=surplus>=2000?'green':surplus>=0?'':'red';
+    var advice=surplus<0?'<div class="warn"><strong>Expenses exceed take-home.</strong> You\'re '+fmt(Math.abs(surplus))+'/mo in the red. Review your loan repayment plan, housing cost, or target income level.</div>':surplus/netMo<0.10?'<div class="warn"><strong>Tight margins.</strong> Only '+(surplus/netMo*100).toFixed(0)+'% of take-home remains after loans and expenses.</div>':'<div class="good"><strong>Healthy surplus.</strong> '+fmt(surplus)+'/mo ('+(surplus/netMo*100).toFixed(0)+'% of take-home) free for investing, debt paydown, or lifestyle.</div>';
+    document.getElementById('s3-out').innerHTML='<div class="mgrid"><div class="mc gold"><div class="ml">Monthly take-home</div><div class="mv">'+fmt(netMo)+'</div></div><div class="mc"><div class="ml">Loan payments</div><div class="mv" style="color:#A32D2D;">-'+fmt(lMoFin)+'</div></div><div class="mc"><div class="ml">Living expenses</div><div class="mv" style="color:#A32D2D;">-'+fmt(totalExpMo)+'</div></div><div class="mc '+sClass+'"><div class="ml">Monthly surplus</div><div class="mv">'+fmtD(surplus)+'</div><div class="ms">'+fmt(sAnn)+'/yr</div></div></div>'+advice+'<div class="ll"><span class="lname" style="font-weight:600;">Available for investing &amp; fun</span><span class="lval '+(surplus>=0?'pos':'neg')+'">'+fmtD(surplus)+'/mo</span></div>';
+    var lAnn=lMoFin*12;var eAnn=totalExpMo*12;var sAnnPos=Math.max(0,sAnn);
+    document.getElementById('s3-chart-wrap').innerHTML='<div class="bar-legend"><span><span class="bl-dot" style="background:#0B1F3A;"></span>Taxes &amp; deductions '+fmt(totalTax+k401+healthAnn+disAnn)+'</span><span><span class="bl-dot" style="background:#C9A84C;"></span>Loans '+fmt(lAnn)+'</span><span><span class="bl-dot" style="background:#D85A30;"></span>Expenses '+fmt(eAnn)+'</span><span><span class="bl-dot" style="background:#1D9E75;"></span>Surplus '+fmt(sAnnPos)+'</span></div><div style="position:relative;width:100%;height:200px;"><canvas id="sc" role="img" aria-label="Stacked bar of annual income allocation">Taxes: '+fmt(totalTax+k401+healthAnn+disAnn)+', Loans: '+fmt(lAnn)+', Expenses: '+fmt(eAnn)+', Surplus: '+fmt(sAnnPos)+'</canvas></div>';
+    setTimeout(function(){
+      var ctx=document.getElementById('sc');if(!ctx)return;
+      if(stackChart){stackChart.destroy();stackChart=null;}
+      stackChart=new Chart(ctx,{type:'bar',data:{labels:['Annual income'],datasets:[{label:'Taxes & deductions',data:[Math.round(totalTax+k401+healthAnn+disAnn)],backgroundColor:'#0B1F3A',borderWidth:0},{label:'Student loans',data:[Math.round(lAnn)],backgroundColor:'#C9A84C',borderWidth:0},{label:'Living expenses',data:[Math.round(eAnn)],backgroundColor:'#D85A30',borderWidth:0},{label:'Surplus',data:[Math.round(sAnnPos)],backgroundColor:'#1D9E75',borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return' '+c.dataset.label+': $'+Math.round(c.raw).toLocaleString();}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'#666'}},y:{stacked:true,ticks:{callback:function(v){return'$'+Math.round(v/1000)+'k';},color:'#666'},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+    },60);
+  }
+}
+
+function goStep(n){
+  [1,2,3].forEach(function(s){
+    document.getElementById('s'+s).style.display=s===n?'block':'none';
+    var b=document.getElementById('nb'+s);b.classList.remove('active','done');
+    if(s===n)b.classList.add('active');else if(s<n)b.classList.add('done');
+  });
+  calc();
+}
+
+renderIncomeCards();
+renderLoanCards();
+calc();
+</script>
+</body>
+</html>
