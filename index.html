@@ -301,7 +301,8 @@ function calc(){
   var status=document.getElementById('filing').value;
   var stateKey=document.getElementById('state-sel').value;
   var cityKey=(document.getElementById('city-input').value||'').toLowerCase().trim();
-  var k401pct=parseFloat(document.getElementByIddirectUnsub:6.54,directPLUSgrad:9.08,directPLUSparent:9.08,directSub:6.53,private:7.00}[val]||6.54alth-mo').value)||0)*12;
+  var k401pct=parseFloat(document.getElementById('k401pct').value)||0;
+  var healthAnn=(parseFloat(document.getElementById('health-mo').value)||0)*12;
   var disAnn=(parseFloat(document.getElementById('dis-mo').value)||0)*12;
   var w2Total=incomes.filter(function(x){return x.type==='w2';}).reduce(function(a,x){return a+x.amount;},0);
   var inc1099=incomes.filter(function(x){return x.type==='1099';}).reduce(function(a,x){return a+x.amount;},0);
