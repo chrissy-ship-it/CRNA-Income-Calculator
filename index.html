@@ -197,14 +197,14 @@ footer{text-align:center;padding:12px;font-size:11px;color:var(--text-ter);}
 <script>
 var K401_LIMIT=24500;
 var stackChart=null;
-var incomes=[{id:0,type:'w2',subtype:'crna-employed',amount:200000,label:'Primary CRNA income'}];
+var incomes=[{id:0,type:'w2',subtype:'per-diem',amount:200000,label:'Primary CRNA income'}];
 var incomeId=1;
 var loans=[{id:0,type:'gradUnsub',balance:150000,rate:7.94,plan:'standard',deferred:true}];
 var loanId=1;
 
 var INCOME_SUBTYPES={
-  w2:[{val:'crna-employed',label:'CRNA — hospital employed'},{val:'crna-group',label:'CRNA — anesthesia group'},{val:'crna-va',label:'CRNA — VA / federal'},{val:'part-time',label:'Part-time / per diem'},{val:'spouse',label:'Spouse / partner income'},{val:'other-w2',label:'Other W-2 employment'}],
-  '1099':[{val:'locums',label:'Locums / travel CRNA'},{val:'crna-owner',label:'CRNA practice owner'},{val:'independent',label:'Independent contractor'},{val:'consulting',label:'Consulting / education'},{val:'rental',label:'Rental income'},{val:'other-1099',label:'Other 1099 / self-employed'}]
+  w2:[{val:'per-diem',label:'Per diem / part-time'},{val:'spouse',label:'Spouse / partner income'},{val:'other-w2',label:'Other W-2 employment'}],
+  '1099':[{val:'s-corp',label:'S-Corp'},{val:'llc-sole',label:'LLC / Sole proprietorship'},{val:'other-1099',label:'Other 1099 / self-employed'}]
 };
 
 var WO_OPTIONS=[
