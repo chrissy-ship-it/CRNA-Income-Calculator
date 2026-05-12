@@ -197,13 +197,13 @@ footer{text-align:center;padding:12px;font-size:11px;color:var(--text-ter);}
 <script>
 var K401_LIMIT=24500;
 var stackChart=null;
-var incomes=[{id:0,type:'w2',subtype:'per-diem',amount:200000,label:'Primary CRNA income'}];
+var incomes=[{id:0,type:'w2',subtype:'full-time',amount:200000,label:'Primary CRNA income'}];
 var incomeId=1;
 var loans=[{id:0,type:'directUnsub',balance:150000,rate:6.54,plan:'standard',deferred:true}];
 var loanId=1;
 
 var INCOME_SUBTYPES={
-  w2:[{val:'per-diem',label:'Per diem / part-time'},{val:'spouse',label:'Spouse / partner income'},{val:'other-w2',label:'Other W-2 employment'}],
+  w2:[{val:'full-time',label:'Full-time / part-time employment'},{val:'per-diem',label:'Per diem'},{val:'spouse',label:'Spouse / partner income'},{val:'other-w2',label:'Other W-2 employment'}],
   '1099':[{val:'s-corp',label:'S-Corp'},{val:'llc-sole',label:'LLC / Sole proprietorship'},{val:'other-1099',label:'Other 1099 / self-employed'}]
 };
 
