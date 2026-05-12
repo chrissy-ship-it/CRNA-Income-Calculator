@@ -199,7 +199,7 @@ var K401_LIMIT=24500;
 var stackChart=null;
 var incomes=[{id:0,type:'w2',subtype:'full-time',amount:200000,label:'Primary CRNA income'}];
 var incomeId=1;
-var loans=[{id:0,type:'directUnsub',balance:150000,rate:6.54,plan:'standard',deferred:true}];
+var loans=[{id:0,type:'directUnsubGrad',balance:150000,rate:6.54,plan:'standard',deferred:true}];
 var loanId=1;
 
 var INCOME_SUBTYPES={
@@ -283,7 +283,7 @@ function renderLoanCards(){
   var html='';
   loans.forEach(function(l,idx){
     html+='<div class="loan-card"><div class="loan-card-title"><span>Loan '+(idx+1)+'</span>'+(loans.length>1?'<button class="rm-btn" onclick="removeLoan('+l.id+')">&#x1F5D1; Remove</button>':'')+'</div>'
-      +'<div class="row"><label>Loan type</label><select style="width:215px;flex:none;font-size:12px;" onchange="loanField('+l.id+',\'type\',this.value)"><optio<option value="directUnsub" '+(l.type==='directUnsub'?'selected':'')+'>Direct Unsubsidized (6.54%)</option><option value="directPLUSgrad" '+(l.type==='directPLUSgrad'?'selected':'')+'>Direct PLUS &mdash; grad/professional (formerly Grad PLUS) (9.08%)</option><option value="directPLUSparent" '+(l.type==='directPLUSparent'?'selected':'')+'>Direct PLUS &mdash; parent (formerly Parent PLUS) (9.08%)</option><option value="directSub" '+(l.type==='directSub'?'selected':'')+'>Direct Subsidized (formerly undergrad only) (6.53%)</option><option value="private" '+(l.type==='private'?'selected':'')+'>Private loan</option>ct></div>'
+      +'<div class="row"><label>Loan type</label><select style="width:215px;flex:none;font-size:12px;" onchange="loanField('+l.id+',\'type\',this.value)"><optio<option value="directUnsubGrad" '+( l.type==='directUnsubGrad'?'selected':'')+'>Direct Unsubsidized &ndash; Graduate (6.54%)</option><option value="directPLUSgrad" '+( l.type==='directPLUSgrad'?'selected':'')+'>Direct PLUS for Graduate/Professional Students (formerly Grad PLUS) (9.08%)</option><option value="directSub" '+( l.type==='directSub'?'selected':'')+'>Direct Subsidized &ndash; Undergraduate (6.53%)</option><option value="directUnsubUndergrad" '+( l.type==='directUnsubUndergrad'?'selected':'')+'>Direct Unsubsidized &ndash; Undergraduate (6.39%)</option><option value="directPLUSparent" '+( l.type==='directPLUSparent'?'selected':'')+'>Direct PLUS for Parents (formerly Parent PLUS) (9.08%)</option><option value="private" '+( l.type==='private'?'selected':'')+'>Private loan</option>ct></div>'
       +'<div class="row"><label>Balance</label><input type="number" min="1000" max="500000" step="1000" value="'+l.balance+'" style="width:120px;text-align:right;" onchange="loanField('+l.id+',\'balance\',parseFloat(this.value)||0);calc();"></div>'
       +'<div class="row"><label>Interest rate (% / yr)</label><input type="number" min="0" max="20" step="0.01" value="'+l.rate+'" style="width:90px;text-align:right;" onchange="loanField('+l.id+',\'rate\',parseFloat(this.value)||0);calc();"></div>'
       +'<div class="row"><label>Repayment plan</label><select style="width:215px;flex:none;font-size:12px;" onchange="loanField('+l.id+',\'plan\',this.value)"><option value="standard" '+(l.plan==='standard'?'selected':'')+'>Standard (10-year)</option><option value="extended" '+(l.plan==='extended'?'selected':'')+'>Extended (25-year)</option><option value="ibr" '+(l.plan==='ibr'?'selected':'')+'>IBR (10% discretionary)</option><option value="save" '+(l.plan==='save'?'selected':'')+'>SAVE (5% discretionary)</option></select></div>'
@@ -292,9 +292,9 @@ function renderLoanCards(){
   });
   document.getElementById('loan-cards').innerHTML=html;
 }
-function addLoan(){loans.push({id:loanId++,type:'directUnsub',balance:50000,rate:6.54,plan:'standard',deferred:false});renderLoanCards();calc();}
+function addLoan(){loans.push({id:loanId++,type:'directUnsubGrad',balance:50000,rate:6.54,plan:'standard',deferred:false});renderLoanCards();calc();}
 function removeLoan(id){loans=loans.filter(function(l){return l.id!==id;});renderLoanCards();calc();}
-function loanField(id,field,val){var l=loans.find(function(x){return x.id===id;});if(!l)return;l[field]=val;if(field==='type')l.rate={directUnsub:6.54,directPLUSgrad:9.08,directPLUSparent:9.08,directSub:6.53,private:7.00}[val]||6.54;renderLoanCards();calc();}
+function loanField(id,field,val){var l=loans.find(function(x){return x.id===id;});if(!l)return;l[field]=val;if(field==='type')l.rate={directUnsubGrad:6.54,directPLUSgrad:9.08,directSub:6.53,directUnsubUndergrad:6.39,directPLUSparent:9.08,private:7.00}[val]||6.54;renderLoanCards();calc();}
 
 function calc(){
   syncK();
@@ -364,7 +364,7 @@ function calc(){
       var bal=l.deferred?l.balance+l.balance*(l.rate/100)*2.5:l.balance;
       var mo=loanMo(bal,l.rate,grossTotal,l.plan);
       var pmt=loanPmt(bal,l.rate,mo);var tInt=loanInt(bal,l.rate,mo);totalLMo+=pmt;
-      var tL={directUnsub:'Direct Unsubsidized',directPLUSgrad:'Direct PLUS (grad/prof)',directPLUSparent:'Direct PLUS (parent)',directSub:'Direct Subsidized',private:'Private loan'}[l.type]||l.type;
+      var tL={directUnsubGrad:'Direct Unsubsidized &ndash; Graduate',directPLUSgrad:'Direct PLUS &ndash; Grad/Prof',directSub:'Direct Subsidized &ndash; Undergrad',directUnsubUndergrad:'Direct Unsubsidized &ndash; Undergrad',directPLUSparent:'Direct PLUS &ndash; Parent',private:'Private loan'}[l.type]||l.type;
       var pL={standard:'Standard 10-yr',extended:'Extended 25-yr',ibr:'IBR',save:'SAVE'}[l.plan]||l.plan;
       lHtml+='<div class="ll"><span class="lname">'+tL+' &mdash; '+pL+'</span><span class="lval">'+fmt(pmt)+'/mo</span></div>';
       lHtml+='<div class="ll"><span class="lname">'+tL+'</span><span class="lval">'+fmt(pmt)+'/mo</span></div>';
