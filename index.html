@@ -292,7 +292,7 @@ function renderLoanCards(){
   });
   document.getElementById('loan-cards').innerHTML=html;
 }
-function addLoan(){loans.push({id:loanId++,typetype:'directUnsub',balance:50000,rate:6.54n:'standard',deferred:false});renderLoanCards();calc();}
+function addLoan(){loans.push({id:loanId++,type:'directUnsub',balance:50000,rate:6.54,plan:'standard',deferred:false});renderLoanCards();calc();}
 function removeLoan(id){loans=loans.filter(function(l){return l.id!==id;});renderLoanCards();calc();}
 function loanField(id,field,val){var l=loans.find(function(x){return x.id===id;});if(!l)return;l[field]=val;if(field==='type')l.rate={directUnsub:6.54,directPLUSgrad:9.08,directPLUSparent:9.08,directSub:6.53,private:7.00}[val]||6.54;renderLoanCards();calc();}
 
