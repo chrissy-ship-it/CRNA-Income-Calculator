@@ -208,17 +208,17 @@ var INCOME_SUBTYPES={
 };
 
 var WO_OPTIONS=[
-  {id:'malpractice',label:'Malpractice insurance',desc:'Own policy (1099 must cover)',amount:15000,checked:true},
-  {id:'health',label:'Self-employed health ins.',desc:'Premiums for you + family',amount:7200,checked:true},
-  {id:'homeoffice',label:'Home office deduction',desc:'Dedicated workspace sq ft',amount:1800,checked:false},
-  {id:'phone',label:'Phone &amp; internet (biz %)',desc:'Business-use portion',amount:1200,checked:false},
-  {id:'cme',label:'CME / continuing education',desc:'Courses, conferences, books',amount:2500,checked:true},
-  {id:'travel',label:'Business travel &amp; lodging',desc:'Locums travel not reimbursed',amount:4000,checked:false},
-  {id:'equipment',label:'Medical equipment / supplies',desc:'Stethoscope, monitors, etc.',amount:800,checked:false},
-  {id:'vehicle',label:'Vehicle (business use %)',desc:'Mileage or actual expense',amount:3000,checked:false},
-  {id:'retirement-sep',label:'SEP-IRA / Solo 401(k)',desc:'Up to 25% net SE income',amount:20000,checked:true},
-  {id:'qbi',label:'QBI deduction (&sect;199A)',desc:'Up to 20% of qualified biz income',amount:0,checked:true,computed:true}
-];
+  {id:'malpractice',label:'Malpractice insurance',desc:'Own policy (1099 must cover)',amount:15000,min:0,max:40000,checked:true},
+  {id:'health',label:'Self-employed health ins.',desc:'Premiums for you + family',amount:7200,min:0,max:25000,checked:true},
+  {id:'homeoffice',label:'Home office deduction',desc:'Dedicated workspace sq ft',amount:1800,min:0,max:10000,checked:false},
+  {id:'phone',label:'Phone &amp; internet (biz %)',desc:'Business-use portion',amount:1200,min:0,max:5000,checked:false},
+  {id:'cme',label:'CME / continuing education',desc:'Courses, conferences, books',amount:2500,min:0,max:10000,checked:true},
+  {id:'travel',label:'Business travel &amp; lodging',desc:'Locums travel not reimbursed',amount:4000,min:0,max:20000,checked:false},
+  {id:'equipment',label:'Medical equipment / supplies',desc:'Stethoscope, monitors, etc.',amount:800,min:0,max:5000,checked:false},
+  {id:'vehicle',label:'Vehicle (business use %)',desc:'Mileage or actual expense',amount:3000,min:0,max:15000,checked:false},
+  {id:'retirement-sep',label:'SEP-IRA / Solo 401(k)',desc:'Up to 25% net SE income',amount:15000,min:0,max:70000,checked:true},
+  {id:'qbi',label:'QBI deduction (&sect;199A)',desc:'Up to 20% of qualified biz income',amount:0,min:0,max:0,checked:true,computed:true}
+]
 
 function fmt(n){return '$'+Math.round(n).toLocaleString();}
 function fmtD(n){return n<0?'-$'+Math.round(Math.abs(n)).toLocaleString():'$'+Math.round(n).toLocaleString();}
@@ -244,6 +244,10 @@ function renderIncomeCards(){
       +'<div class="row" style="margin-bottom:8px;"><label style="font-size:12px;">Income type</label><div class="type-toggle"><button onclick="setIncomeType('+inc.id+',\'w2\')" class="'+(inc.type==='w2'?'active-w2':'')+'">W-2</button><button onclick="setIncomeType('+inc.id+',\'1099\')" class="'+(inc.type==='1099'?'active-1099':'')+'">1099</button></div></div>'
       +'<div class="row" style="margin-bottom:8px;"><label style="font-size:12px;">Category</label><select style="width:210px;flex:none;font-size:12px;" onchange="setIncomeSub('+inc.id+',this.value)">'+subOpts+'</select></div>'
       +'<div class="row"><label style="font-size:12px;">Annual gross income</label><input type="number" min="0" max="1000000" step="1000" value="'+inc.amount+'" style="width:130px;text-align:right;" oninput="setIncomeAmt('+inc.id+',parseFloat(this.value)||0)"></div>'
+      +(inc.type==='1099'&&inc.subtype==='s-corp'?'<div style="background:var(--gold-light);border-radius:8px;padding:10px 12px;margin-top:6px;"><div style="font-size:11px;font-weight:600;color:var(--gold-dark);margin-bottom:8px;">S-Corp income breakdown</div>'
+        +'<div class="row" style="margin-bottom:6px;"><label style="font-size:12px;">W-2 salary from S-Corp<br><span style=\'font-size:10px;color:var(--text-sec)\'>Subject to payroll taxes</span></label><input type="number" min="0" max="1000000" step="1000" value="'+(inc.scorp_salary||0)+'" style="width:130px;text-align:right;" oninput="setSCorpField('+inc.id+',\'salary\',parseFloat(this.value)||0)"></div>'
+        +'<div class="row"><label style="font-size:12px;">S-Corp distributions<br><span style=\'font-size:10px;color:var(--text-sec)\'>No payroll tax</span></label><input type="number" min="0" max="1000000" step="1000" value="'+(inc.scorp_dist||0)+'" style="width:130px;text-align:right;" oninput="setSCorpField('+inc.id+',\'dist\',parseFloat(this.value)||0)"></div>'
+        +'<div style="font-size:10px;color:var(--text-sec);margin-top:6px;">Total above should equal annual gross income above.</div></div>':'')
       +'</div>';
   });
   document.getElementById('income-cards').innerHTML=html;
@@ -261,20 +265,36 @@ function renderWOCards(){
   WO_OPTIONS.forEach(function(wo){
     var amt=wo.id==='qbi'?qbi:wo.amount;
     var desc=wo.id==='qbi'?'~'+fmt(qbi)+' (20% of 1099 income)':wo.desc;
-    html+='<div class="wo-row"><input type="checkbox" id="wo-'+wo.id+'" '+(wo.checked?'checked':'')+' onchange="calc()"><div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+wo.label+'</div><div style="font-size:11px;color:var(--text-sec);">'+desc+'</div></div><div style="font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap;">'+fmt(amt)+'</div></div>';
+    var sliderHtml='';
+    if(!wo.computed){
+      sliderHtml='<div style="display:flex;align-items:center;gap:6px;margin-top:4px;">'
+        +'<input type="range" id="woslider-'+wo.id+'" min="'+wo.min+'" max="'+wo.max+'" step="100" value="'+wo.amount+'" style="flex:1;accent-color:var(--gold);" oninput="updateWOSlider(\''+wo.id+'\',this.value)">'
+        +'<span id="woval-'+wo.id+'" style="font-size:11px;font-weight:600;color:var(--gold-dark);min-width:52px;text-align:right;">'+fmt(wo.amount)+'</span>'
+        +'</div>';
+    }
+    html+='<div class="wo-row"><input type="checkbox" id="wo-'+wo.id+'" '+(wo.checked?'checked':'')+' onchange="calc()"><div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:600;color:var(--text);">'+wo.label+'</div><div style="font-size:11px;color:var(--text-sec);">'+desc+'</div>'+sliderHtml+'</div><div style="font-size:12px;font-weight:600;color:var(--gold-dark);margin-left:8px;white-space:nowrap;">'+(wo.computed?fmt(amt):'')+'</div></div>';
   });
-  html+='</div><div class="info" style="margin-top:8px;">SE tax deduction (auto-applied): <strong>'+fmt(seDed)+'</strong> &mdash; half of your '+fmt(seT)+' SE tax is deductible from federal AGI per IRC &sect;164(f).</div>';
+  html+='</div>';
+  html+='<div class="row" style="margin-top:8px;"><label style="font-size:12px;">Other write-offs</label><input type="number" id="wo-custom" min="0" step="100" placeholder="0" style="width:130px;text-align:right;" oninput="calc()"></div>';
+  html+='<div style="font-size:11px;color:var(--text-sec);margin-top:8px;padding:8px;background:var(--gold-light);border-radius:8px;"><strong>SE tax deduction (auto-applied):</strong> '+fmt(seDed)+' &mdash; half of your '+fmt(seT)+' SE tax is deductible from federal AGI per IRC &sect;164(f).</div>';
   document.getElementById('wo-cards').innerHTML=html;
 }
 
-function addIncome(){incomes.push({id:incomeId++,type:'w2',subtype:'part-time',amount:30000});renderIncomeCards();calc();}
+function updateWOSlider(id,val){
+  var wo=WO_OPTIONS.find(function(w){return w.id===id;});
+  if(wo)wo.amount=parseFloat(val)||0;
+  var lbl=document.getElementById('woval-'+id);
+  if(lbl)lbl.textContent=fmt(parseFloat(val)||0);
+  calc();
+}
+function addIncome(){incomes.push({id:incomeId++,type:'w2',subtype:'full-time',amount:30000});renderIncomeCards();calc();}
 function removeIncome(id){incomes=incomes.filter(function(x){return x.id!==id;});renderIncomeCards();calc();}
 function setIncomeType(id,type){var i=incomes.find(function(x){return x.id===id;});if(i){i.type=type;i.subtype=INCOME_SUBTYPES[type][0].val;}renderIncomeCards();calc();}
 function setIncomeSub(id,val){var i=incomes.find(function(x){return x.id===id;});if(i)i.subtype=val;calc();}
 function setIncomeAmt(id,val){var i=incomes.find(function(x){return x.id===id;});if(i)i.amount=val;syncK();calc();}
+function setSCorpField(id,field,val){var i=incomes.find(function(x){return x.id===id;});if(i){if(field==='salary')i.scorp_salary=val;else i.scorp_dist=val;}calc();}
 
-function getWOTotal(inc1099){var qbi=inc1099*.20;var total=0;WO_OPTIONS.forEach(function(wo){var cb=document.getElementById('wo-'+wo.id);if(cb&&cb.checked)total+=wo.id==='qbi'?qbi:wo.amount;});var ce=document.getElementById('wo-custom');if(ce)total+=parseFloat(ce.value)||0;return total;}
-
+function getWOTotal(inc1099){var qbi=inc1099*.20;var total=0;WO_OPTIONS.forEach(function(wo){var cb=document.getElementById('wo-'+wo.id);if(cb&&cb.checked){if(wo.id==='qbi'){total+=qbi;}else{var sl=document.getElementById('woslider-'+wo.id);total+=sl?parseFloat(sl.value)||0:wo.amount;}}});var ce=document.getElementById('wo-custom');if(ce)total+=parseFloat(ce.value)||0;return total;}
 function loanPmt(bal,rate,mo){if(rate===0)return bal/mo;var r=rate/100/12;return bal*r*Math.pow(1+r,mo)/(Math.pow(1+r,mo)-1);}
 function loanInt(bal,rate,mo){return loanPmt(bal,rate,mo)*mo-bal;}
 function loanMo(bal,rate,gross,plan){if(plan==='standard')return 120;if(plan==='extended')return 300;if(plan==='ibr'){var d=Math.max(0,gross-21870)*.10/12;if(d<=0)return 300;var r=rate/100/12;if(r===0)return Math.ceil(bal/d);return Math.min(Math.ceil(Math.log(d/(d-r*bal))/Math.log(1+r)),240);}if(plan==='paye'){var d2=Math.max(0,gross-21870)*.10/12;if(d2<=0)return 240;var r2=rate/100/12;if(r2===0)return Math.ceil(bal/d2);return Math.min(Math.ceil(Math.log(d2/(d2-r2*bal))/Math.log(1+r2)),240);}if(plan==='icr'){var d3=Math.max(0,gross-15060)*.20/12;if(d3<=0)return 300;var r3=rate/100/12;if(r3===0)return Math.ceil(bal/d3);return Math.min(Math.ceil(Math.log(d3/(d3-r3*bal))/Math.log(1+r3)),300);}if(plan==='graduated'){return 120;}return 120;}
@@ -309,7 +329,10 @@ function calc(){
   var inc1099=incomes.filter(function(x){return x.type==='1099';}).reduce(function(a,x){return a+x.amount;},0);
   var grossTotal=w2Total+inc1099;
   var k401=Math.min(w2Total*(k401pct/100),K401_LIMIT);
-  var seT=inc1099>0?ficaSE(inc1099):0;
+  var scorp1099=incomes.filter(function(x){return x.type==='1099'&&x.subtype==='s-corp';});
+  var scorp1099Salary=scorp1099.reduce(function(a,x){return a+(x.scorp_salary||0);},0);
+  var nonScorp1099=incomes.filter(function(x){return x.type==='1099'&&x.subtype!=='s-corp';}).reduce(function(a,x){return a+x.amount;},0);
+  var seT=(nonScorp1099>0?ficaSE(nonScorp1099):0)+(scorp1099Salary>0?ficaW2(scorp1099Salary)*2:0);
   var seDed=seT/2;
   var woTotal=inc1099>0?getWOTotal(inc1099):0;
   var has1099=inc1099>0;
